@@ -1,1 +1,93 @@
-
+--DOOR NAME
+local ESP_Doors = {Door={"Door",1.5}}
+--ITEM NAME
+local ESP_Items = {StarJug={"StarJug",1.5},StarBottle={"StarBottle",1.5},StarVial={"StarVial",1.5},GweenSoda={"Gween Soda",1.5},Bread={"Bread",1.5},Cheese={"Cheese",1.5},BandagePack={"BandagePack",1.5},BatteryPack={"Battery Pack",1.5},LaserPointer={"LaserPointer",1.5},Glowstick={"Glowstick",1.5},Smoothie={"Smoothie",1.5},Straplight={"Straplight",1.5},Bulklight={"Bulklight",1.5},KeyObtain={"Key",1.5},LiveHintBook={"Book",1.5},Lighter={"Lighter",1.5},Lockpick={"Lockpicks",1.5},Vitamins={"Vitamins",1.5},Crucifix={"Crucifix",1.5},CrucifixWall={"Crucifix",1.5},SkeletonKey={"Skeleton Key",1.5},Flashlight={"Flashlight",1.5},Candle={"Candle",1.5},FuseObtain={"Fuse",1.5},LiveBreakerPolePickup={"Fuse",1.5},Shears={"Shears",1.5},Battery={"Battery",1.5},PickupItem={"Paper",1.5},ElectricalKeyObtain={"Electrical Key",1.5},Shakelight={"Shakelight",1.5},Scanner={"iPad",1.5}}
+--ENTITIES NAME
+local ESP_Entities = {SeekNewCloneMoving={"Seek",7},Grumbo={"Grumble",7},GiggleCeiling={"Giggle",7},Sally={"Sally",7},BackdoorLookman={"Lookman",7},BackdoorRush={"Blitz",7},RushMoving={"Rush",5},AmbushMoving={"Ambush",5},FigureRig={"Figure",7},FigureRagdoll={"Figure",7},FigureLibrary={"Figure",7},SeekMoving={"Seek",5.5},Screech={"Screech",2},Eyes={"Eyes",4},Snare={"Snare",2},A60={"A-60",10},A120={"A-120",10}}
+local function ApplySettings(Object)
+task.spawn(function()
+task.wait()
+if (ESP_Items[Object.Name] or ESP_Entities[Object.Name] or ESP_Doors[Object.Name]) and Object.ClassName == "Model" then
+            if Object:FindFirstChild("RushNew") then
+                if not Object.RushNew:WaitForChild("PlaySound").Playing then return end
+            end
+            local Color = ESP_Items[Object.Name] and Color3.new(1,1) or ESP_Entities[Object.Name] and Color3.new(1) or ESP_Doors[Object.Name] and Color3.new(0,1,1)
+            if Object.Name == "RushMoving" or Object.Name == "AmbushMoving" or Object.Name == "Eyes" or Object.Name == "A60" or Object.Name == "A120" then
+                for i = 1, 100 do
+                    if Object:FindFirstChildOfClass("Part") then
+                        break
+                    end
+                    if i == 100 then
+                        return
+                    end
+                end
+                Object:FindFirstChildOfClass("Part").Transparency = 0.99
+                Instance.new("Humanoid",Object)
+            end
+         local function ApplyHighlight(IsValid,Bool)
+                if IsValid then
+                    if Bool then
+                        local TXT = IsValid[1]
+                        if IsValid[1] == "Door" then
+                            local RoomName
+                            if Floor.Value == "Rooms" then
+                                RoomName = ""
+                            else
+                                workspace.CurrentRooms:WaitForChild(tonumber(Object.Parent.Name) + 1,math.huge)
+                                if not OtherESP then return end
+                                local OldString = workspace.CurrentRooms[tonumber(Object.Parent.Name) + 1]:GetAttribute("OriginalName"):sub(7,99)
+                                local NewString = ""
+                                for i = 1, #OldString do
+                                    if i == 1 then
+                                        NewString = NewString .. OldString:sub(i,i)
+                                        continue
+                                    end
+                                    if OldString:sub(i,i) == OldString:sub(i,i):upper() and OldString:sub(i-1,i-1) ~= "_" then
+                                        NewString = NewString .. " "
+                                    end
+                                    if OldString:sub(i,i) ~= "_" then
+                                        NewString = NewString .. OldString:sub(i,i)
+                                    end
+                                end
+                                RoomName = " (" .. NewString .. ")"
+                            end
+                            TXT = "Door " .. (Floor.Value == "Rooms" and "A-" or "") .. tonumber(Object.Parent.Name) + 1 .. RoomName
+                        end
+                        if IsValid[1] == "Gold" then
+                            TXT = Object:GetAttribute("GoldValue") .. " Gold"
+                        end
+                        local UI = Instance.new("BillboardGui",Object)
+                        UI.Size = UDim2.new(0,1000,0,30)
+                        UI.AlwaysOnTop = true
+                        UI.StudsOffset = Vector3.new(0,IsValid[2],0)
+                        local Label = Instance.new("TextLabel",UI)
+                        Label.Size = UDim2.new(1,0,1,0)
+                        Label.BackgroundTransparency = 1
+                        Label.TextScaled = true
+                        Label.Text = TXT
+                        Label.TextColor3 = Color
+                        Label.FontFace = Font.new("rbxasset://fonts/families/Oswald.json")
+                        Label.TextStrokeTransparency = 0
+                        Label.TextStrokeColor3 = Color3.new(Color.R/2,Color.G/2,Color.B/2)
+                    elseif Object:FindFirstChild("BillboardGui") then
+                        Object.BillboardGui:Destroy()
+                    end
+                    local Target = Object
+                    if IsValid[1] == "Door" and Object.Parent.Name ~= "49" and Object.Parent.Name ~= "50" then
+                        Target = Object:WaitForChild("Door")
+                    end
+                    if Bool then
+                        local Highlight = Instance.new("Highlight",Target)
+                        Highlight.FillColor = Color
+                        Highlight.OutlineColor = Color
+                    elseif Target:FindFirstChild("Highlight") then
+                        Target.Highlight:Destroy()
+                    end
+                end
+            end
+            ApplyHighlight(ESP_Items[Object.Name],ItemESP)
+            ApplyHighlight(ESP_Entities[Object.Name],EntityESP)
+            ApplyHighlight(ESP_Other[Object.Name],OtherESP)
+        end   
+    end)
+end
